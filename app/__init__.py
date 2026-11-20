@@ -22,7 +22,9 @@ except ImportError:
 def create_app(test_config=None):
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     app = Flask(__name__)
-    app.config.from_mapping(DATABASE=os.path.join(root, "chat.db"))
+    # Vercel's filesystem is read-only except /tmp, so the SQLite file must live there.
+    default_db = "/tmp/chat.db" if os.environ.get("VERCEL") else os.path.join(root, "chat.db")
+    app.config.from_mapping(DATABASE=os.environ.get("DATABASE_PATH", default_db))
     if test_config:
         app.config.update(test_config)
 
