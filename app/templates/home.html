@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <section class="hero">
+    <h1>Hello! I'm {{ cfg.bot_name }}.</h1>
+    <p>Ask questions, write code, plan your study time or draft a message. Every chat is saved, so you can come back to it later.</p>
+    <div class="hero-actions">
+      <a class="btn primary big" href="{{ url_for('pages.chat') }}">Start a new chat</a>
+      <a class="btn big" href="{{ url_for('pages.history') }}">Open history</a>
+    </div>
+  </section>
+
+  {% if not cfg.ready %}
+  <section class="notice warn">
+    <div>
+      <strong>One step before you can chat: add your API key.</strong>
+      <p>Open Settings, choose a provider (Claude, GPT, Gemini or a custom one), paste your key and press Save.</p>
+    </div>
+    <a class="btn primary" href="{{ url_for('pages.settings_page') }}">Open Settings</a>
+  </section>
+  {% endif %}
+
+  <section class="grid stats">
+    <div class="card stat">
+      <span class="muted">Model</span>
+      <strong>{{ cfg.effective_model or 'not set' }}</strong>
+      <span class="muted small">{{ cfg.provider_label }}</span>
+    </div>
+    <div class="card stat"><span class="muted">Chats saved</span><strong>{{ stats.conversations }}</strong></div>
+    <div class="card stat"><span class="muted">Questions asked</span><strong>{{ stats.questions }}</strong></div>
+  </section>
+
+  <section>
+    <h2>Try one of these</h2>
+    <div class="grid prompts">
+      {% for p in prompts %}
+      <a class="card prompt" href="{{ url_for('pages.chat', prompt=p) }}">{{ p }}</a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <div class="row-between">
+      <h2>Recent chats</h2>
+      {% if recent %}<a href="{{ url_for('pages.history') }}" class="link">See all</a>{% endif %}
+    </div>
+    {% if recent %}
+    <div class="card list">
+      {% for c in recent %}
+      <a class="list-item" href="{{ url_for('pages.chat', conversation_id=c.id) }}">
+        <div>
+          <strong>{{ c.title }}</strong>
+          <div class="muted small clip">{{ c.preview }}</div>
+        </div>
+        <time class="muted small" data-utc="{{ c.updated_at }}"></time>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card empty">No chats yet. Your conversations will show up here.</div>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

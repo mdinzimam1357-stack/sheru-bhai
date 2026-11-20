@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="{{ cfg.theme }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ cfg.bot_name }}{% endblock %} - AI Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% set page = request.endpoint %}
+  <div class="shell">
+
+    <!-- SIDEBAR: the same on every page -->
+    <aside class="sidebar">
+      <a class="brand" href="{{ url_for('pages.home') }}">
+        <span class="logo">AI</span><span class="brand-name">AI Chat</span>
+      </a>
+      <nav class="nav">
+        <a href="{{ url_for('pages.home') }}" class="{{ 'active' if page == 'pages.home' }}">
+          <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+        <a href="{{ url_for('pages.chat') }}" class="{{ 'active' if page == 'pages.chat' }}">
+          <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.7 7L3 21l2-5.5A8 8 0 1 1 21 12z"/></svg><span>Chat</span></a>
+        <a href="{{ url_for('pages.history') }}" class="{{ 'active' if page == 'pages.history' }}">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span></a>
+        <a href="{{ url_for('pages.settings_page') }}" class="{{ 'active' if page == 'pages.settings_page' }}">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></a>
+      </nav>
+
+      <div class="side-foot">
+        <a class="status {{ 'ok' if cfg.ready else 'warn' }}" href="{{ url_for('pages.settings_page') }}"
+           title="{{ 'Connected' if cfg.ready else 'Click to add your API key' }}">
+          <i></i>
+          {% if cfg.ready %}<span>{{ cfg.effective_model }}</span>{% else %}<span>API key needed</span>{% endif %}
+        </a>
+        <button id="theme-toggle" class="icon-btn" title="Switch light / dark theme" aria-label="Switch theme">
+          <svg viewBox="0 0 24 24"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">{% block content %}{% endblock %}</main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

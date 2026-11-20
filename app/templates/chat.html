@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Chat{% endblock %}
+{% block body_class %}chat-page{% endblock %}
+
+{% block content %}
+<div class="chat">
+
+  <header class="chat-head">
+    <h1 id="chat-title">{{ conversation.title if conversation else 'New chat' }}</h1>
+    <div class="head-right">
+      <span class="chip" title="Model used for new answers">{{ cfg.effective_model or 'no model' }}</span>
+      <a class="btn small" href="{{ url_for('pages.chat') }}">+ New chat</a>
+    </div>
+  </header>
+
+  {% if not cfg.ready %}
+  <div class="notice warn slim">
+    <span>Add your API key in <a href="{{ url_for('pages.settings_page') }}">Settings</a> to start chatting.</span>
+  </div>
+  {% endif %}
+
+  <section id="messages" class="messages" aria-live="polite">
+    <div id="empty-state" class="empty-state" {% if messages %}hidden{% endif %}>
+      <div class="logo big">AI</div>
+      <h2>How can I help you today?</h2>
+      <div class="grid prompts">
+        {% for p in prompts %}<button class="card prompt" type="button" data-prompt="{{ p }}">{{ p }}</button>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <form id="composer" class="composer" autocomplete="off">
+    <textarea id="input" rows="1" maxlength="4000" placeholder="Message {{ cfg.bot_name }}..." autofocus></textarea>
+    <button id="send" class="btn primary" type="submit">Send</button>
+  </form>
+  <p class="fine">Enter to send &middot; Shift+Enter for a new line &middot; AI can make mistakes, so check important facts.</p>
+</div>
+
+<!-- Data for chat.js (safe JSON written by Flask) -->
+<script id="initial" type="application/json">{{ {
+  "conversation_id": conversation.id if conversation else none,
+  "messages": messages,
+  "bot_name": cfg.bot_name,
+  "ready": cfg.ready,
+  "auto_prompt": auto_prompt
+} | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/chat.js') }}"></script>{% endblock %}

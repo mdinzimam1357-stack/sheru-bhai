@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page narrow">
+  <h1>Settings</h1>
+  <p class="muted">Everything is saved on this computer in the SQL table <code>settings</code>.</p>
+
+  <form id="settings-form" autocomplete="off" novalidate>
+
+    <!-- 1. CONNECTION -->
+    <section class="card form-card">
+      <h2>1. Connection <span class="tag {{ 'ok' if cfg.ready else 'warn' }}" id="conn-tag">{{ 'Ready' if cfg.ready else 'Not connected' }}</span></h2>
+
+      <label class="field">
+        <span>Provider</span>
+        <select id="provider" name="provider">
+          {% for key, p in providers.items() %}
+          <option value="{{ key }}" {{ 'selected' if cfg.provider == key }}>{{ p.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="field">
+        <span>API key
+          <a id="key-link" class="link small" target="_blank" rel="noopener" href="#">Get a key</a>
+        </span>
+        <div class="input-group">
+          <input id="api_key" name="api_key" type="password" spellcheck="false"
+                 placeholder="{{ cfg.api_key_hint + ' (saved - leave empty to keep)' if cfg.has_key else 'Paste your API key here' }}">
+          <button type="button" id="show-key" class="btn">Show</button>
+        </div>
+        <small class="help" id="key-help">
+          {% if cfg.has_key %}A key is saved{{ ' (from the LLM_API_KEY environment variable)' if cfg.key_from_env }}. Type a new one to replace it.
+          {% else %}The key stays on your computer and is never shown again after saving.{% endif %}
+        </small>
+        {% if cfg.has_key and not cfg.key_from_env %}<button type="button" id="remove-key" class="link small left">Remove saved key</button>{% endif %}
+      </label>
+
+      <label class="field" id="field-base-url" hidden>
+        <span>Server address (base URL)</span>
+        <input id="base_url" name="base_url" value="{{ cfg.base_url }}" placeholder="https://openrouter.ai/api/v1  or  http://localhost:11434/v1">
+        <small class="help">Any OpenAI-compatible server: OpenRouter, Groq, Together, Ollama ...</small>
+      </label>
+
+      <label class="field">
+        <span>Model</span>
+        <input id="model" name="model" list="model-list" value="{{ cfg.model }}" placeholder="">
+        <datalist id="model-list"></datalist>
+        <small class="help">Leave empty to use the default. You can type any model name your account supports.</small>
+      </label>
+
+      <div class="actions">
+        <button type="button" id="test" class="btn">Test connection</button>
+        <span id="test-result" class="result"></span>
+      </div>
+    </section>
+
+    <!-- 2. BEHAVIOUR -->
+    <section class="card form-card">
+      <h2>2. Behaviour</h2>
+
+      <label class="field">
+        <span>Assistant name</span>
+        <input id="bot_name" name="bot_name" maxlength="40" value="{{ cfg.bot_name }}">
+      </label>
+
+      <label class="field">
+        <span>Personality (system prompt)</span>
+        <select id="persona" aria-label="Personality presets">
+          <option value="">Choose a preset...</option>
+          <option value="helper">Friendly helper</option>
+          <option value="tutor">Patient Python tutor</option>
+          <option value="short">Short and direct</option>
+          <option value="eli12">Explain like I'm 12</option>
+          <option value="interview">Interview coach</option>
+        </select>
+        <textarea id="system_prompt" name="system_prompt" rows="5" maxlength="4000">{{ cfg.system_prompt }}</textarea>
+        <small class="help">These instructions are sent with every question and shape how the assistant answers.</small>
+      </label>
+
+      <div class="two">
+        <label class="field">
+          <span>Creativity: <b id="temp-val">{{ cfg.temperature }}</b></span>
+          <input id="temperature" name="temperature" type="range" min="0" max="1" step="0.1" value="{{ cfg.temperature }}">
+          <small class="help">Low = focused and predictable. High = more varied.</small>
+        </label>
+        <label class="field">
+          <span>Maximum answer length (tokens)</span>
+          <input id="max_tokens" name="max_tokens" type="number" min="50" max="8000" step="1" value="{{ cfg.max_tokens }}">
+          <small class="help">About 4 tokens per 3 words.</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Memory: remember the last <b id="mem-val">{{ cfg.memory_messages }}</b> messages</span>
+        <input id="memory_messages" name="memory_messages" type="range" min="0" max="50" step="1" value="{{ cfg.memory_messages }}">
+        <small class="help">0 = every question is answered on its own. More memory = better follow-ups but more cost.</small>
+      </label>
+    </section>
+
+    <!-- 3. APPEARANCE -->
+    <section class="card form-card">
+      <h2>3. Appearance</h2>
+      <label class="field">
+        <span>Theme</span>
+        <select id="theme" name="theme">
+          <option value="light" {{ 'selected' if cfg.theme == 'light' }}>Light</option>
+          <option value="dark" {{ 'selected' if cfg.theme == 'dark' }}>Dark</option>
+        </select>
+      </label>
+    </section>
+
+    <div class="savebar">
+      <span id="save-result" class="result"></span>
+      <button class="btn primary big" type="submit">Save settings</button>
+    </div>
+  </form>
+
+  <!-- 4. DATA -->
+  <section class="card form-card danger-zone">
+    <h2>4. Your data</h2>
+    <div class="row-between wrap">
+      <div><strong>Reset behaviour</strong><div class="muted small">Name, personality, creativity, length and memory go back to defaults. Your key stays.</div></div>
+      <button type="button" id="reset" class="btn">Reset to defaults</button>
+    </div>
+    <div class="row-between wrap">
+      <div><strong>Delete all chats</strong><div class="muted small">Removes every conversation and message from the database.</div></div>
+      <button type="button" id="wipe" class="btn danger">Delete all chats</button>
+    </div>
+  </section>
+</div>
+
+<script id="providers" type="application/json">{{ providers | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/settings.js') }}"></script>{% endblock %}

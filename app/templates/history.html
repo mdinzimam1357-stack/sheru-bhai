@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="row-between">
+    <h1>History</h1>
+    {% if conversations %}<button id="delete-all" class="btn danger small">Delete all chats</button>{% endif %}
+  </div>
+
+  <!-- Search is a normal GET form: Flask runs SQL LIKE on titles and messages -->
+  <form class="search" method="get" action="{{ url_for('pages.history') }}">
+    <input type="search" name="q" value="{{ query }}" placeholder="Search your chats..." aria-label="Search chats">
+    <button class="btn">Search</button>
+    {% if query %}<a class="btn" href="{{ url_for('pages.history') }}">Clear</a>{% endif %}
+  </form>
+
+  {% if conversations %}
+  <p class="muted small">{{ conversations|length }} chat{{ '' if conversations|length == 1 else 's' }}{% if query %} matching "{{ query }}"{% endif %}</p>
+  <div class="card list" id="history-list">
+    {% for c in conversations %}
+    <div class="list-item hist" data-id="{{ c.id }}">
+      <a class="hist-main" href="{{ url_for('pages.chat', conversation_id=c.id) }}">
+        <strong class="hist-title">{{ c.title }}</strong>
+        <div class="muted small clip">{{ c.preview }}</div>
+        <div class="muted small">{{ c.message_count }} messages &middot; <time data-utc="{{ c.updated_at }}"></time></div>
+      </a>
+      <div class="hist-actions">
+        <button class="btn small act-rename" type="button">Rename</button>
+        <a class="btn small" href="{{ url_for('api.export_conversation', conversation_id=c.id, format='md') }}">Export</a>
+        <button class="btn small danger act-delete" type="button">Delete</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card empty">
+    {% if query %}No chats match "{{ query }}".{% else %}No chats yet. <a href="{{ url_for('pages.chat') }}">Start your first chat</a>.{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/history.js') }}"></script>{% endblock %}

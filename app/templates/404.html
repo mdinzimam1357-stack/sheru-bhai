@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block content %}
+<div class="page narrow center">
+  <h1>Page not found</h1>
+  <p class="muted">That page or chat does not exist (it may have been deleted).</p>
+  <a class="btn primary" href="{{ url_for('pages.home') }}">Go home</a>
+</div>
+{% endblock %}
